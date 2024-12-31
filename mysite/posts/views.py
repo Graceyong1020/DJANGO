@@ -58,8 +58,21 @@ def update_post(request, post_id):
 
 
 # Delete
+""" def delete_post(request, post_id):
+    return HttpResponse('Delete post') """
+
 def delete_post(request, post_id):
-    return HttpResponse('Delete post')
+    post = get_object_or_404(Posts, id=post_id)
+    password = request.POST.get('password')
+
+    if request.method == 'POST':
+        if password == post.password:
+            post.delete()
+            messages.success(request, 'Post deleted successfully')
+            return redirect('posts:list')
+        else:
+            messages.error(request, 'Password is incorrect')
+            return redirect('posts:read', post_id=post.id)
 
 # List
 """ def get_posts(request):

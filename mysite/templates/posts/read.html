@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-3">
+            <h5 class="card-header text-primary">
+                <strong>{{post.title}}</strong>
+            </h5>
+            <div class="card-body">
+                <div class="mb-3 text-muted">
+                    Username: {{ post.username}} |
+                    Created: {{ post.created_at | date:"Y-m-d H:i" }} |
+                    Updated: {{ post.updated_at | date:"Y-m-d H:i" }}
+                </div>
+                <div class="mb-3">
+                    {{ post.content | linebreaksbr }}
+                </div>
+
+            </div>
+        </div>
+        <div>
+            <a href="{% url 'posts:list' %}" class="btn btn-primary">List</a>
+            <a href="{% url 'posts:update' post_id=post.id %}" class="btn btn-warning">Update</a>
+            <button type="button" class="btn btn-danger">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

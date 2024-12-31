@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{%block content%}
+<div class="row">
+    <div class="col-12">
+        <!--  register button -->
+        <div>
+            <a href="{% url 'posts:create' %}" class="btn btn-primary">Create Post</a>
+        </div>
+        <!-- register button -->
+    </div>
+
+</div>
+<!-- {% endblock} -->
+
+<div class="row">
+    <div class="col-12">
+        <!-- list -->
+        <div class="table-responsive">
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr class="" text-center">
+                        <th>No</th>
+                        <th>Title</th>
+                        <th>Username</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td><a href="{% url 'posts:read' post_id=post.id %}">{{ post.title }}</a></td>
+                        <td class="text-center">{{ post.user.username }}</td>
+                        <td class="text-center">{{ post.created_at | date:"Y-m-d H:i" }}</td>
+                        <td class="text-center">{{ post.updated_at | date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+        <!-- list -->
+    </div>
+</div>
+{% endblock %}

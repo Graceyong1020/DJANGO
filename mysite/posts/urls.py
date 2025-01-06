@@ -1,3 +1,5 @@
+# post 등록, 조회, 수정, 삭제를 위한 url 
+
 from django.urls import path
 from . import views
 

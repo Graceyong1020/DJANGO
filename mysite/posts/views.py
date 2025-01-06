@@ -1,13 +1,15 @@
 from django.http import HttpResponse
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 from .models import Posts
 
 from django.contrib import messages
 from .form import PostCreateForm
 from .form2 import PostUpdateForm
 
-# Create your views here.
 
 # register
 """ def create_post(request):
@@ -79,5 +81,48 @@ def delete_post(request, post_id):
     return HttpResponse('Get List of posts') """
 
 def get_posts(request):
-    posts = Posts.objects.all().order_by('-created_at')
-    return render(request, 'posts/list.html', {'posts': posts})
+    page = request.GET.get('page', 1)
+    posts = Posts.objects.all().order_by('-created_at') # 최신순으로 정렬
+
+    searchType = request.GET.get('searchType')
+    searchKeyword = request.GET.get('searchKeyword')
+
+    # search
+    if searchType not in [None, ''] and searchKeyword not in [None, '']:
+        if searchType == 'all':
+            posts = posts.filter(
+                Q(title__contains=searchKeyword) |
+                Q(content__contains=searchKeyword) |
+                Q(username__contains=searchKeyword)
+            )
+        elif searchType == 'title':
+            posts = posts.filter(
+                Q(title__contains=searchKeyword)
+            )
+        elif searchType == 'content':
+            posts = posts.filter(
+                Q(content__contains=searchKeyword)
+            )
+        elif searchType == 'username':
+            posts = posts.filter(
+                Q(username__contains=searchKeyword)
+            )
+
+    #pagination
+    paginator = Paginator(posts, 10)
+    page_obj = paginator.get_page(page)
+
+    # calculate the start index of the sequence
+    start_index = paginator.count - (paginator.per_page * (page_obj.number -1))
+
+    # calculate the sequence and add it to the post list
+    for index, _ in enumerate(page_obj, start=0):
+        page_obj[index].index_number = start_index - index
+
+    #return render(request, 'posts/list.html', {'posts': page_obj})
+
+    return render(request, 'posts/list.html', {
+        'posts': page_obj,
+        'searchType': searchType,
+        'searchKeyword': searchKeyword,
+    })

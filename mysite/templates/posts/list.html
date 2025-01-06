@@ -4,10 +4,28 @@
 <div class="row">
     <div class="col-12">
         <!--  register button -->
-        <div>
+        <div class="d-flex justify-content-between">
+           <!--  search form -->
+             <form method="GET">
+                <div class="input-group">
+                    <select name="searchType" class="form-select w-auto">
+                        <option value="all" {% if searchType == 'all' %} selected {% endif %}>All</option>
+                        <option value="title" {% if searchType == 'title' %} selected {% endif %}>Title</option>
+                        <option value="content" {% if searchType == 'content' %} selected {% endif %}>Content</option>
+                        <option value="username" {% if searchType == 'username' %} selected {% endif %}>Username</option>
+                    </select>
+                    <input type="text" name="searchKeyword" class="form-control w-auto" value="{{ searchKeyword|default_if_none:'' }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if searchType != null %}
+                        <a href="{%url 'posts:list' %}" class="btn btn-danger">reset</a>
+                    {% endif %}
+
+                </div>
+             </form>
+             <!-- register button  -->
             <a href="{% url 'posts:create' %}" class="btn btn-primary">Create Post</a>
         </div>
-        <!-- register button -->
+        <!-- search, register button -->
     </div>
 
 </div>
@@ -44,4 +62,44 @@
         <!-- list -->
     </div>
 </div>
+
+<div class="row">
+    <div class="col-12">
+        <!-- pagination -->
+        <div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <!-- prev -->
+                    {% if posts.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ posts.previous_page_number }}"> Previous</a>
+                    </li>
+                    {% endif %}
+                    <!-- prev -->
+                    <!-- page list -->
+                    {% for num in posts.paginator.page_range %}
+                        {% if page_number >= posts.number|add:'-5' and page_number <= posts.number|add:'5' %}
+                        <li class="page-item {% if number == posts.number %} active {% endif %}">
+                            <a class="page-link" href="{% url 'posts:list' %}?page={{ page_number }}">
+                                {{ page_number }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                        <!-- page list -->
+                        <!-- next -->
+                    {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ posts.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                        <!-- next -->
+                </ul>
+            </nav>
+        </div>
+        <!-- pagination -->
+
+    </div>
+</div>
+
 {% endblock %}

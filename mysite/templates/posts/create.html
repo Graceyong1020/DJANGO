@@ -56,13 +56,13 @@
                     </div>
 
                     <div>
-                        <label for=""uploadFile" class="form-label">Upload File</label>
+                        <label for="" uploadFile" class="form-label">Upload File</label>
                         <input type="file" class="form-control" id="uploadFile" name="uploadFile" accept="image/*">
                     </div>
 
                 </div>
             </div>
-            
+
             <div>
                 <button type="submit" class="btn btn-primary">Register</button>
                 <a href="{% url 'posts:list' %}" class="btn btn-secondary">Cancel</a>
@@ -72,4 +72,103 @@
         <!-- register -->
     </div>
 </div>
+{% endblock %}
+
+{% comment %}
+{% block script %}
+<script>
+    /* $(document).ready(function () {
+        // check the file format
+        $("#updateForm").submit(function (event) {
+            event.preventDefault();
+
+            if ($('#title').val() == '') {
+                alert('Please enter the title');
+                $('#title').focus();
+                return false;
+            }
+            if ($('#content').val() == '') {
+                alert('Please enter the content');
+                $('#content').focus();
+                return false;
+            }
+            if ($('#username').val() == '') {
+                alert('Please enter the username');
+                $('#username').focus();
+                return false;
+            }
+            if ($('#password').val() == '') {
+                alert('Please enter the password');
+                $('#password').focus();
+                return false;
+            }
+            return true;
+
+        });
+    }); */
+</script>
+{% endblock %}
+{% endcomment %}
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+        // check the file format
+        $('#createForm').validate({
+            rules: {
+                title: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 100
+                },
+                content: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 1000
+                },
+                username: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 20
+                },
+                password: {
+                    required: true,
+                    minlength: 4,
+                    maxlength: 20
+                }
+            },
+            messages: {
+                title: {
+                    required: 'Please enter the title',
+                    minlength: 'Please enter at least 2 characters',
+                    maxlength: 'Please enter less than 100 characters'
+                },
+                content: {
+                    required: 'Please enter the content',
+                    minlength: 'Please enter at least 2 characters',
+                    maxlength: 'Please enter less than 1000 characters'
+                },
+                username: {
+                    required: 'Please enter the username',
+                    minlength: 'Please enter at least 2 characters',
+                    maxlength: 'Please enter less than 10 characters'
+                },
+                password: {
+                    required: 'Please enter the password',
+                    minlength: 'Please enter at least 4 characters',
+                    maxlength: 'Please enter less than 20 characters'
+                }
+            },
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorPlacement: function(error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.mb-3').append(error);
+            },
+            submitHandler: function(form) {
+                form.submit();
+            }
+        })
+    })
+</script>
 {% endblock %}

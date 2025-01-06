@@ -1,8 +1,18 @@
-from django.http import HttpResponse
+#from django.http import HttpResponse
+
+# register view 
+import os
+import uuid
+from mysite import settings
+
+# file download 
+from urllib.parse import quote # url encoding
+from django.http import HttpResponse # http response
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.contrib.auth.hashers import make_password, check_password # 비밀번호 암호화 및 비교
 
 from .models import Posts
 
@@ -18,12 +28,34 @@ def create_post(request):
     form = PostCreateForm()
 
     if request.method == 'POST':
-        form = PostCreateForm(request.POST)
+        form = PostCreateForm(request.POST, request.FILES)
+        
         if form.is_valid():
-           post = form.save(commit=False)
-           post.save()
-           messages.success(request, 'Post created successfully')
-           return redirect('posts:read', post_id=post.id)
+            post = form.save(commit=False)
+            post.password = make_password(form.cleaned_data['password'])
+            post.save()
+
+            # file upload
+            if 'uploadFile' in request.FILES:
+                filename = uuid.uuid4().hex
+                file = request.FILES['uploadFile']
+
+                # save path 
+                file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(filename))
+                if not os.path.exists(os.path.dirname(file_path)):
+                    os.makedirs(os.path.dirname(file_path))
+
+                # save file
+                with open(file_path, 'wb') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                
+                post.filename = filename
+                post.original_filename = file.name
+                post.save()
+
+            messages.success(request, 'Post created successfully')
+            return redirect('posts:read', post_id=post.id)
         else:
             messages.error(request, 'Post creation failed')
     return render(request, 'posts/create.html', {'form': form})
@@ -41,21 +73,62 @@ def get_post(request, post_id):
     return HttpResponse('Update post') """
 def update_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
+    post.password = post.password
     form = PostUpdateForm(instance=post)
 
     if request.method == 'POST':
         form = PostUpdateForm(request.POST)
 
         if form.is_valid():
-            if form.cleaned_data['password'] == post.password:
+            if check_password(form.cleaned_data['password'], post.password): # 비밀번호 확인
                 post = form.save(commit=False)
+                post.password = make_password(form.cleaned_data['password'])
                 post.save()
-                messages.success(request, 'Post updated successfully')
-                return redirect('posts:read', post_id=post.id)
+
+                # delete file
+                if form.cleaned_data['deleteFile']:
+                    if post.filename:
+                        # delete existing file
+                        file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+
+                        post.filename = None
+                        post.original_filename = None
+                        post.save()
+
+                # file upload
+                if request.FILES['uploadFile']:
+                    if post.filename:
+                            # delete existing file
+                            file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+
+                    filename = uuid.uuid4().hex
+                    file = request.FILES['uploadFile']
+
+                    # save path
+                    file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(filename))
+                    if not os.path.exists(os.path.dirname(file_path)):
+                        os.makedirs(os.path.dirname(file_path))
+
+                    # save file
+                    with open(file_path, 'wb') as f:
+                        for chunk in file.chunks():
+                            f.write(chunk)
+
+                    post.filename = filename
+                    post.original_filename = file.name
+                    post.save()
+
+                    messages.success(request, 'Post updated successfully')
+                    return redirect('posts:read', post_id=post.id)
+                else:
+                    messages.error(request, 'Password is incorrect')
             else:
-                messages.error(request, 'Password is incorrect')
-        else:
-            messages.error(request, 'Post update failed')
+                messages.error(request, 'Post update failed')
+        
     return render(request, 'posts/update.html', {'form': form})
 
 
@@ -68,7 +141,13 @@ def delete_post(request, post_id):
     password = request.POST.get('password')
 
     if request.method == 'POST':
-        if password == post.password:
+        if check_password(password, post.password):
+            # delete file
+            if post.filename:
+                file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+
             post.delete()
             messages.success(request, 'Post deleted successfully')
             return redirect('posts:list')
@@ -126,3 +205,16 @@ def get_posts(request):
         'searchType': searchType,
         'searchKeyword': searchKeyword,
     })
+
+# file download
+def download_file(request, post_id):
+    post = get_object_or_404(Posts, id=post_id)
+    file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
+
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(file.read(), content_type='application/octet-stream')
+            encoded_filename = quote(post.original_filename)
+            response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
+        
+    return HttpResponse(status=404) # file not found

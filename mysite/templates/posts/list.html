@@ -77,9 +77,9 @@
                     {% endif %}
                     <!-- prev -->
                     <!-- page list -->
-                    {% for num in posts.paginator.page_range %}
+                    {% for page_number in posts.paginator.page_range %}
                         {% if page_number >= posts.number|add:'-5' and page_number <= posts.number|add:'5' %}
-                        <li class="page-item {% if number == posts.number %} active {% endif %}">
+                        <li class="page-item {% if page_number == posts.number %} active {% endif %}">
                             <a class="page-link" href="{% url 'posts:list' %}?page={{ page_number }}">
                                 {{ page_number }}
                             </a>

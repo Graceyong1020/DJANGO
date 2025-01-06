@@ -8,6 +8,8 @@ class Posts(models.Model):
     content = models.TextField(verbose_name="content")
     password = models.CharField(verbose_name="password", max_length=100)
     username = models.CharField(verbose_name="username", max_length=100)
+    filename = models.CharField(verbose_name="filename", max_length=100, null=True, blank=True)
+    original_filename = models.CharField(verbose_name="original filename", max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(verbose_name="created", auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name="updated", auto_now=True)
 

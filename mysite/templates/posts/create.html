@@ -55,8 +55,14 @@
                         {% endif %}
                     </div>
 
+                    <div>
+                        <label for=""uploadFile" class="form-label">Upload File</label>
+                        <input type="file" class="form-control" id="uploadFile" name="uploadFile" accept="image/*">
+                    </div>
+
                 </div>
             </div>
+            
             <div>
                 <button type="submit" class="btn btn-primary">Register</button>
                 <a href="{% url 'posts:list' %}" class="btn btn-secondary">Cancel</a>

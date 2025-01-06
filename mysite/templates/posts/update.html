@@ -1,10 +1,17 @@
 {% extends "base.html" %}
 
+{%block style%}{%endblock%}
+
+{%block title%} modify post {%endblock%}
+
 {% block content %}
+
+<!-- modify post -->
+
 <div class="row">
     <div class="col-12">
         <!--  register -->
-        <form id="createForm" method="POST">
+        <form id="updateForm" method="POST" enctype="multipart/form-data"> <!-- enctype="multipart/form-data": file upload -->
             {% csrf_token %} <!-- csrf_token: Cross-Site Request Forgery token -->
             <div class="card mb-3">
                 <div class="card-header">
@@ -61,6 +68,31 @@
                     </div>
                 </div>
             </div>
+
+          <!--   file upload -->
+            {% if board.filename %}
+                <div class="mb-3">
+                    <div class="mb-2">
+                        <span> 현재 파일: <a href="/posts/{{ posts.id}}/download">
+                            {{ board.original_filename }}</a></span>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="deleteFile" id="deleteFile" value="true">
+                        <label class="form-check-label text-danger" for="deleteFile">
+                            delte attached file
+                        </label>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="mb-3">
+                <label class="form-label">attached file</label>
+                <input type="file" class="form-control" id="uploadFile" name="uploadFile" accept="*/*">
+                <small class="form-text text-muted">
+                        If you select a file, the existing file will be replaced.
+                </small>
+            </div>
+
+
             <div>
                 <button type="submit" class="btn btn-primary">Create</button>
                 <a href="{% url 'posts:list' %}" class="btn btn-secondary">List</a>

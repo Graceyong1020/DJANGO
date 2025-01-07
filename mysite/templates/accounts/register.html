@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-4 mx-auto">
+       <!--  sign up -->
+        <form id="registerForm" method="POST">
+            {% csrf_token %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">Sign Up</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" id="first_name" name="first_name" class="form-control" 
+                            placeholder="First Name" value="{{ form.first_name.value|default_if_none:''}}">
+                        {% if form.first_name.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.first_name.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Username"
+                            value="{{ form.username.value|default_if_none:''}}">
+                        {% if form.username.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.username.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Email"
+                            value="{{ form.email.value|default_if_none:''}}">
+                        {% if form.email.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.email.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+                        {% if form.password.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.password.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="password2" class="form-label text-danger">Password Confirmation <span
+                                class="text-danger">*</span></label> 
+                        <input type="password" class="form-control" id="password2" name="password2" placeholder="Password Confirmation">
+                        {% if form.password2.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.password2.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+                <a href="{% url 'auth:login' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        <!-- sign up -->
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // register form
+        $("#registerForm").validate({
+            rules: {
+                first_name: {
+                    required: true,
+                    minlength: 2,
+                    maxlength:4
+                },
+                email: {
+                    required: true,
+                    email: true
+                },
+                username: {
+                    required: true,
+                    minlength: 6,
+                    maxlength: 20
+                },
+                password1: {
+                    required: true,
+                    minlength: 8,
+                    maxlength: 50
+                },
+                password2: {
+                    required: true,
+                    equalTo: "#password1"
+                }
+            },
+            messages: {
+                first_name: {
+                    required: "Please enter your first name",
+                    minlength: "Your first name must consist of at least 2 characters",
+                    maxlength: "Your first name must consist of at most 4 characters"
+                },
+                email: {
+                    required: "Please enter your email",
+                    email: "Please enter a valid email"
+                },
+                username: {
+                    required: "Please enter your username",
+                    minlength: "Your username must consist of at least 6 characters",
+                    maxlength: "Your username must consist of at most 20 characters"
+                },
+                password1: {
+                    required: "Please enter your password",
+                    minlength: "Your password must consist of at least 8 characters",
+                    maxlength: "Your password must consist of at most 50 characters"
+                },
+                password2: {
+                    required: "Please enter your password confirmation",
+                    equalTo: "Your password confirmation must be the same as your password"
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

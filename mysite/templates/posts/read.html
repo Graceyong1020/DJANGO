@@ -13,9 +13,7 @@
                     Created: {{ post.created_at | date:"Y-m-d H:i" }} |
                     Updated: {{ post.updated_at | date:"Y-m-d H:i" }}
                 </div>
-                <div class="mb-3">
-                    {{ post.content | linebreaksbr }}
-                </div>
+ 
 
                 {% if post.filename %}
                 <div class="mb-3 text-muted">

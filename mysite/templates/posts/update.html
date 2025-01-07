@@ -4,8 +4,7 @@
 <div class="row">
     <div class="col-12">
         <!-- modify post -->
-        <form id="updateForm" method="POST" enctype="multipart/form-data">
-            <!-- enctype="multipart/form-data": file upload -->
+        <form id="updateForm" method="POST" enctype="multipart/form-data"> <!-- enctype="multipart/form-data": file upload -->
             {% csrf_token %} <!-- csrf_token: Cross-Site Request Forgery token -->
             <div class="card mb-3">
                 <div class="card-header">
@@ -28,8 +27,7 @@
                         <label for="content" class="form-label">
                             Content <span class="text-danger">*</span>
                         </label>
-                        <textarea rows="10" id="content" name="content" class="form-control"
-                            placeholder="Content">{{ form.content.value|default_if_none:'' }}</textarea>
+                        <textarea rows="10" id="content" name="content" class="form-control" placeholder="Content">{{ form.content.value|default_if_none:'' }}</textarea>
                         {% if form.content.errors %} <!-- form.content.errors: error message for content -->
                         <div class="form-text text-danger">
                             {{ form.content.errors.0 }}
@@ -65,15 +63,14 @@
                     {% if form.instance.filename %}
                     <div class="mb-3">
                         <div class="mb-2">
-                            <span> original file:
+                            <span> original file: 
                                 <a href="{% url 'posts:download' form.instance.id %}">
-                                    {{ form.instance.original_filename }}
+                                {{ form.instance.original_filename }}
                                 </a>
                             </span>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="deleteFile" id="deleteFile"
-                                value="true">
+                            <input class="form-check-input" type="checkbox" name="deleteFile" id="deleteFile" value="true">
                             <label class="form-check-label text-danger" for="deleteFile">
                                 delete attached file
                             </label>
@@ -100,103 +97,69 @@
 {% block script %}
 <script src="https://cdn.jsdelivr.net/npm/tinymce@5.10.2/tinymce.min.js"></script>
 <script>
-    $(document).ready(function () {
+    console.log('Loading TinyMCE script...');
+    tinymce.init({
+        selector: '#content',
+        setup: function (editor) {
+            editor.on('init', function () {
+                console.log('TinyMCE initialized on #content');
+            });
+            editor.on('change', function () {
+                editor.save(); // save the content to the textarea
+                validateContent(); // validate the content
+            });
+        }
+    });
 
-        // tinymce editor
-        tinymce.init({
-            selector: '#content',
-            language: 'ko_KR',
-            // tinymce requirements 
-            setup: function (editor) {
-                editor.on('change', function () {
-                    editor.save(); // save the content to the textarea
-                    validateContent(); // validate the content
-                });
-            }
-        });
+    // validate the content
+    function validateContent() {
+        var content = tinymce.get('content').getContent();
+        var textContent = $('<div>').html(content).text(); // convert html to text
 
-        // validate the content
-        function validateContent() {
-            var content = tinymce.get('content').getContent();
-            var textContent = $('<div>').html(content).text(); // convert html to text
+        if (textContent.length < 2) {
+            $('#content').addClass('is-invalid');
+            $('#content-error').remove();
+            $('#content').closest('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter at least 2 characters</div>');
+            return false;
+        } else if (textContent.length > 1000) {
+            $('#content').addClass('is-invalid');
+            $('#content-error').remove();
+            $('#content').closest('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter less than 1000 characters</div>');
+            return false;
+        } else {
+            $('#content').removeClass('is-invalid');
+            $('#content-error').remove();
+            return true;
+        }
+    }
 
-            if (textContent.length < 2) {
-                $('#content').addClass('is-invalid');
-                $('#content-error').remove();
-                $('#content').closest('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter at least 2 characters</div>');
-                return false;
-            } else if (textContent.length > 1000) {
-                $('#content').addClass('is-invalid');
-                $('#content-error').remove();
-                $('#content').closest('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter less than 1000 characters</div>');
-                return false;
-            } else {
-                $('#content').removeClass('is-invalid');
-                $('#content-error').remove();
-                return true;
+    // validate the form
+    $('#updateForm').validate({
+        rules: {
+            title: {
+                required: true,
+                maxlength: 100,
+                minlength: 2
+            },
+            content: {
+                required: true,
+                maxlength: 1000,
+                minlength: 2
+            },
+            username: {
+                required: true,
+                maxlength: 50,
+                minlength: 2
+            },
+            password: {
+                required: true,
+                maxlength: 50,
+                minlength: 4
             }
         }
+    });
 
-        // validate the form
-        $('#updateForm').validate({
-            rules: {
-                title: {
-                    required: true,
-                    maxlength: 100,
-                    minlength: 2
-                },
-                content: {
-                    required: true,
-                    maxlength: 1000,
-                    minlength: 2
-                },
-                username: {
-                    required: true,
-                    maxlength: 50,
-                    minlength: 2
-                },
-                password: {
-                    required: true,
-                    maxlength: 50,
-                    minlength: 4
-                }
-            },
-            messages: {
-                title: {
-                    required: 'Please enter the title',
-                    minlength: 'Please enter at least 2 characters',
-                    maxlength: 'Please enter less than 100 characters'
-                },
-                content: {
-                    required: 'Please enter the content',
-                    minlength: 'Please enter at least 2 characters',
-                    maxlength: 'Please enter less than 1000 characters'
-                },
-                username: {
-                    required: 'Please enter the username',
-                    minlength: 'Please enter at least 2 characters',
-                    maxlength: 'Please enter less than 10 characters'
-                },
-                password: {
-                    required: 'Please enter the password',
-                    minlength: 'Please enter at least 4 characters',
-                    maxlength: 'Please enter less than 20 characters'
-                }
-            },
-            errorClass: 'is-invalid',
-            validClass: 'is-valid',
-            errorPlacement: function(error, element) {
-                error.addClass('invalid-feedback');
-                element.closest('.mb-3').append(error);
-            },
-            submitHandler: function(form) {
-                // check the content before submitting the form
-                if (validateContent()) {
-                    form.submit();
-                }
-                return false;
-            }
-        });
-    })
+    // Debugging: Log TinyMCE initialization
+    console.log('TinyMCE script loaded');
 </script>
 {% endblock %}

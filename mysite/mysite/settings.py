@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "posts",
     "tinymce",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -119,7 +120,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
@@ -131,4 +132,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Media files - path 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
+
+LOGIN_URL ='auth:login'
+LOGIN_REDIRECT_URL = 'posts:list' # 로그인 성공시 이동할 페이지
+LOGOUT_REDIRECT_URL = 'posts:list' # 로그아웃 성공시 이동할 페이지
 

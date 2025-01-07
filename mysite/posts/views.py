@@ -73,14 +73,14 @@ def get_post(request, post_id):
     return HttpResponse('Update post') """
 def update_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
-    post.password = post.password
+    post_password = post.password 
     form = PostUpdateForm(instance=post)
 
     if request.method == 'POST':
-        form = PostUpdateForm(request.POST, request.FILES, instance=post)
+        form = PostUpdateForm(request.POST, instance=post)
 
         if form.is_valid():
-            if check_password(form.cleaned_data['password'], post.password): # 비밀번호 확인
+            if check_password(form.cleaned_data['password'], post_password): # 비밀번호 확인
                 post = form.save(commit=False)
                 post.password = make_password(form.cleaned_data['password'])
                 post.save()

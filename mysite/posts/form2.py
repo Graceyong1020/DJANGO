@@ -7,10 +7,11 @@ class PostUpdateForm(forms.ModelForm):
     content = forms.CharField(required=False)
     username = forms.CharField(required=False)
     password = forms.CharField(required=False)
+    deleteFile = forms.BooleanField(required=False)
 
     class Meta:
         model = Posts
-        fields = ['title', 'content', 'username', 'password']
+        fields = ['title', 'content', 'username', 'password', 'deleteFile']
 
     # validation check for title
     def clean_title(self):

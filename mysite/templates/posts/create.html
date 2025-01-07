@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-12">
         <!-- register -->
-        <form id="createForm" method="POST">
+        <form id="createForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %} <!-- csrf_token: Cross-Site Request Forgery token -->
             <div class="" card mb-3>
                 <div class="card-header">
@@ -56,7 +56,7 @@
                     </div>
 
                     <div>
-                        <label for="" uploadFile" class="form-label">Upload File</label>
+                        <label for="uploadFile" class="form-label">Upload File</label>
                         <input type="file" class="form-control" id="uploadFile" name="uploadFile" accept="image/*">
                     </div>
 
@@ -113,6 +113,43 @@
 {% block script %}
 <script>
     $(document).ready(function() {
+
+        // tinymce editor
+        tinymce.init({
+            selector: '#content',
+            language: 'ko_KR',
+            // tinymce requirements 
+            setup: function(editor) {
+                editor.on('change', function() {
+                    editor.save(); // save the content to the textarea
+                    validateContent(); // validate the content
+                });
+            }
+        });
+
+        // validate the content
+        function validateContent() {
+            var content = tinymce.get('content').getContent();
+            var textContent = $('<div>').html(content).text(); // convert html to text
+
+                if (textContent.length < 2) {
+                    $('#content').addClass('is-invalid');
+                    $('#content-error').remove();
+                    $('#content').closet('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter at least 2 characters</div>');
+                    return false;
+                } else if (textContent.length > 1000) {
+                    $('#content').addClass('is-invalid');
+                    $('#content-error').remove();
+                    $('#content').closet('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter less than 1000 characters</div>');
+                    return false;
+                } else {
+                    $('#content').removeClass('is-invalid');
+                    $('#content-error').remove();
+                    return true;
+                }
+        }
+
+
         // check the file format
         $('#createForm').validate({
             rules: {
@@ -166,9 +203,13 @@
                 element.closest('.mb-3').append(error);
             },
             submitHandler: function(form) {
-                form.submit();
+                // check the content before submitting the form
+                if (validateContent()) {
+                    form.submit();
+                }
+                return false;
             }
-        })
+        });
     })
 </script>
 {% endblock %}

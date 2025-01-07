@@ -77,7 +77,7 @@ def update_post(request, post_id):
     form = PostUpdateForm(instance=post)
 
     if request.method == 'POST':
-        form = PostUpdateForm(request.POST)
+        form = PostUpdateForm(request.POST, request.FILES, instance=post)
 
         if form.is_valid():
             if check_password(form.cleaned_data['password'], post.password): # 비밀번호 확인
@@ -86,7 +86,7 @@ def update_post(request, post_id):
                 post.save()
 
                 # delete file
-                if form.cleaned_data['deleteFile']:
+                if form.cleaned_data.get('deleteFile'):
                     if post.filename:
                         # delete existing file
                         file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
@@ -98,7 +98,7 @@ def update_post(request, post_id):
                         post.save()
 
                 # file upload
-                if request.FILES['uploadFile']:
+                if 'uploadFile' in request.FILES:
                     if post.filename:
                             # delete existing file
                             file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
@@ -216,5 +216,5 @@ def download_file(request, post_id):
             response = HttpResponse(file.read(), content_type='application/octet-stream')
             encoded_filename = quote(post.original_filename)
             response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
-        
+            return response
     return HttpResponse(status=404) # file not found

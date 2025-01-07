@@ -24,7 +24,8 @@
                 {% endif %}
 
                 <div class="mb-3">
-                    {{ post.content | linebreaksbr }}
+                    <!-- {{ post.content | linebreaksbr }} -->
+                      {{ post.content | safe }}
                 </div>
             </div>
         </div>

@@ -8,7 +8,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 
-from .forms import RegisterForm, LoginForm, ProfileUpdateForm
+from .forms import AccountDeleteForm, RegisterForm, LoginForm, ProfileUpdateForm, PasswordUpdateForm, UsernameFindForm, PasswordResetForm
+
+import random
+import string
 
 # signup
 """ def register_account(request):
@@ -75,11 +78,11 @@ def logout_account(request):
     return redirect('auth:login')
 
 # profile
-""" def profile_profile(request):
+""" def get_profile(request):
     return HttpResponse("Profile account") """
 
 @login_required(login_url='auth:login')
-def profile_profile(request):
+def get_profile(request):
     form = ProfileUpdateForm(instance=request.user)
 
     if request.method == 'POST':
@@ -95,25 +98,134 @@ def profile_profile(request):
             
     return render(request, 'accounts/profile.html', {'message_class': 'col-4 mx-auto'})
 
-# update
+# profile update
+""" def update_profile(request):
+    return HttpResponse("Update account") """
+
+@login_required(login_url='auth:login')
 def update_profile(request):
-    return HttpResponse("Update account")
+    form = ProfileUpdateForm(instance=request.user)
+
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, instance=request.user) 
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.save()
+            update_session_auth_hash(request. user)
+            messages.success(request, 'Profile updated successfully')
+            return redirect('auth:profile')
+        else:
+            messages.error(request, 'Profile update failed')
+        
+    return render(request, 'accounts/update_profile.html', 
+                  {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # password change
+""" def update_password(request):
+    return HttpResponse("Change password") """
+
+@login_required(login_url='auth:login')
 def update_password(request):
-    return HttpResponse("Change password")
+    form = PasswordUpdateForm()
+
+    if request.method == 'POST':
+        form = PasswordUpdateForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            password1 = form.cleaned_data['password1']
+
+            user = authenticate(request, username=request.user.username, password=password)
+            if user is None:
+                messages.error(request, 'Invalid password')
+                return redirect('auth:update_password')
+           
+            user = request.user
+            user.set_password(password1)
+            user.save()
+
+            logout(request)
+            messages.success(request, 'Password updated successfully')
+            return redirect('auth:login')
+        else:
+            messages.error(request, 'Password update failed')
+
+    return render(request, 'accounts/update_password.html', 
+                  {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # find id
 def find_username(request):
-    return HttpResponse("Find username")
+    if request.user.is_authenticated:
+        return redirect('auth:profile')
+    
+    form = UsernameFindForm()
+
+    if request.method == 'POST':
+        form = UsernameFindForm(request.POST) 
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            email = form.cleaned_data['email']
+            user = User.objects.filter(first_name=first_name, email=email).first()
+            if user:
+                messages.success(request, f'Your username is {user.username}')
+                return redirect('auth:login')
+            else:
+                messages.error(request, 'User not found')
+        else: 
+            messages.error(request, 'Invalid input')
+    return render(request, 'accounts/find_username.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # reset password
 def reset_password(request):
-    return HttpResponse("Reset password")
+    if request.user.is_authenticated:
+        return redirect('auth:profile')
+    
+    form = PasswordResetForm()
+
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            user = User.objects.filter(first_name=first_name, username=username, email=email).first()
+            if user:
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+                user.set_password(password)
+                user.save()
+
+                messages.success(request, f'Your new password is {password}')
+                return redirect('auth:login')
+            else:
+                messages.error(request, 'User not found')
+
+    return render(request, 'accounts/reset_password.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 # delete account
+""" def delete_account(request):
+    return HttpResponse("Delete account") """
+
+@login_required(login_url='auth:login')
 def delete_account(request):
-    return HttpResponse("Delete account")
+    form = AccountDeleteForm()
+
+    if request.method == 'POST':
+        form = AccountDeleteForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = User.objects.filter(first_name=first_name, username=username, email=email).first()
+            authenticated = authenticate(request, username=username, password=password)
+            if user and authenticated is not None:
+                user.delete()
+                logout(request)
+                messages.success(request, 'Account deleted successfully')
+                return redirect('auth:login')
+            else:
+                messages.error(request, 'User not found or password is incorrect')
+
+    return render(request, 'accounts/delete_account.html', {'form': form, 'message_class': 'col-4 mx-auto'})
 
 
 

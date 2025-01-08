@@ -71,6 +71,7 @@ def get_post(request, post_id):
 # Update
 """ def update_post(request, post_id):
     return HttpResponse('Update post') """
+
 def update_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
     post_password = post.password 

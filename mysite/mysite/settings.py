@@ -30,7 +30,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS = [ # 추가한 app을 등록
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "posts",
     "tinymce",
-    "accounts",
+    "accounts", # accounts app 추가
 ]
 
 MIDDLEWARE = [
@@ -135,5 +135,5 @@ MEDIA_ROOT = BASE_DIR / 'media/'
 
 LOGIN_URL ='auth:login'
 LOGIN_REDIRECT_URL = 'posts:list' # 로그인 성공시 이동할 페이지
-LOGOUT_REDIRECT_URL = 'posts:list' # 로그아웃 성공시 이동할 페이지
+LOGOUT_REDIRECT_URL = 'posts:login' # 로그아웃 성공시 이동할 페이지
 

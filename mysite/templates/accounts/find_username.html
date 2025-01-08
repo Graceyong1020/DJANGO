@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-4 mx-auto">
+        <!-- find username -->
+        <form id="findUsernameForm" method="POST">
+            {% csrf_token %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">Find ID</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Name"
+                            value="{{ form.first_name.value|default_if_none:''}}">
+                        {% if form.first_name.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.first_name.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Email"
+                            value="{{ form.email.value|default_if_none:''}}">
+                        {% if form.email.errors %}
+                        <div class="form-text text-danger">
+                            {{ form.email.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Find ID</button>
+                <a href="{% url 'auth:resest_password' %}" class="btn btn-danger">Reset Password</a>
+                <a href="{% url 'auth:login' %}" class="btn btn-secondary">Login</a>
+            </div>
+        </form>
+        <!-- find username -->
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // validate find username form
+        $('#findUsernameForm').validate({
+            rules: {
+                first_name: {
+                    required: true,
+
+                },
+                email: {
+                    required: true,
+
+                }
+            },
+            messages: {
+                first_name: {
+                    required: "Please enter your name",
+                },
+                email: {
+                    required: "Please enter your email",
+                }
+            },
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.mb-3').append(error);
+            },
+            submitHandler: function (form) {
+                form.submit();
+            }
+
+        });
+    });
+</script>
+{% endblock %}

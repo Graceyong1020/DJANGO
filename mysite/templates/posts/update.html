@@ -81,7 +81,6 @@
                         <label class="form-label">attached file</label>
                         <input type="file" class="form-control" id="uploadFile" name="uploadFile" accept="*/*">
                     </div>
-
                 </div>
             </div>
             <div>
@@ -94,16 +93,52 @@
 </div>
 {% endblock %}
 
+{% comment %}
 {% block script %}
-<script src="https://cdn.jsdelivr.net/npm/tinymce@5.10.2/tinymce.min.js"></script>
 <script>
+    /* $(document).ready(function () {
+        // check the file format
+        $("#updateForm").submit(function (event) {
+            event.preventDefault();
+
+            if ($('#title').val() == '') {
+                alert('Please enter the title');
+                $('#title').focus();
+                return false;
+            }
+            if ($('#content').val() == '') {
+                alert('Please enter the content');
+                $('#content').focus();
+                return false;
+            }
+            if ($('#username').val() == '') {
+                alert('Please enter the username');
+                $('#username').focus();
+                return false;
+            }
+            if ($('#password').val() == '') {
+                alert('Please enter the password');
+                $('#password').focus();
+                return false;
+            }
+            return true;
+
+        });
+    }); */
+</script>
+{% endblock %}
+{% endcomment %}
+
+{% block script %}
+<script>
+    $(document).ready(function() {
+
+    // tinymce 
     console.log('Loading TinyMCE script...');
     tinymce.init({
         selector: '#content',
+        language: 'ko_KR',
         setup: function (editor) {
-            editor.on('init', function () {
-                console.log('TinyMCE initialized on #content');
-            });
             editor.on('change', function () {
                 editor.save(); // save the content to the textarea
                 validateContent(); // validate the content
@@ -156,8 +191,45 @@
                 maxlength: 50,
                 minlength: 4
             }
+        },
+
+        messages: {
+            title: {
+                required: 'Please enter the title',
+                maxlength: 'Please enter less than 100 characters',
+                minlength: 'Please enter at least 2 characters'
+            },
+            content: {
+                required: 'Please enter the content',
+                maxlength: 'Please enter less than 1000 characters',
+                minlength: 'Please enter at least 2 characters'
+            },
+            username: {
+                required: 'Please enter the username',
+                maxlength: 'Please enter less than 50 characters',
+                minlength: 'Please enter at least 2 characters'
+            },
+            password: {
+                required: 'Please enter the password',
+                maxlength: 'Please enter less than 50 characters',
+                minlength: 'Please enter at least 4 characters'
+            }
+        },
+
+        errorClass: 'is-invalid',
+        validClass: 'is-valid',
+        errorPlacement: function (error, element) {
+            error.addClass('invalid-feedback');
+            element.closest('.mb-3').append(error);
+        },
+        submitHandler: function (form) {
+            if (validateContent()) {
+                form.submit();
+            }
+            return false;
         }
     });
+});
 
     // Debugging: Log TinyMCE initialization
     console.log('TinyMCE script loaded');

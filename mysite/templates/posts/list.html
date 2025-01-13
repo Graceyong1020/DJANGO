@@ -12,7 +12,8 @@
                         <option value="all" {% if searchType == 'all' %} selected {% endif %}>All</option>
                         <option value="title" {% if searchType == 'title' %} selected {% endif %}>Title</option>
                         <option value="content" {% if searchType == 'content' %} selected {% endif %}>Content</option>
-                        <option value="username" {% if searchType == 'username' %} selected {% endif %}>Username</option>
+                        <!-- <option value="username" {% if searchType == 'username' %} selected {% endif %}>Username</option> -->
+                        <option value="first_name" {% if searchType == 'first_name' %} selected {% endif %}>Username</option>
                     </select>
                     <input type="text" name="searchKeyword" class="form-control w-auto" value="{{ searchKeyword|default_if_none:'' }}">
                     <button type="submit" class="btn btn-primary">Search</button>
@@ -50,7 +51,8 @@
                     <tr>
                         <td class="text-center">{{ forloop.counter }}</td>
                         <td><a href="{% url 'posts:read' post_id=post.id %}">{{ post.title }}</a></td>
-                        <td class="text-center">{{ post.user.username }}</td>
+                        <!-- <td class="text-center">{{ post.user.username }}</td> -->
+                        <td class="text-center">{{ post.created_by.first_name }}</td>
                         <td class="text-center">{{ post.created_at | date:"Y-m-d H:i" }}</td>
                         <td class="text-center">{{ post.updated_at | date:"Y-m-d H:i" }}</td>
                     </tr>

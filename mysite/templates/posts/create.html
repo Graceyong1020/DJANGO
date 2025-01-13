@@ -33,12 +33,12 @@
                         </div>
                         {% endif %} <!-- form.content.errors: error message for content -->
                     </div>
-
+                    <!-- 
                     <div class="mb-3">
                         <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="username" name="username"
                             value="{{ form.username.value|default_if_none:''}}">
-                        {% if form.username.errors %} <!-- form.username.errors: error message for username -->
+                        {% if form.username.errors %} 
                         <div class="form-text text-danger">
                             {{ form.username.errors.0 }}
                         </div>
@@ -48,12 +48,12 @@
                         <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                         <input type="password" class="form-control" id="password" name="password"
                             placeholder="password">
-                        {% if form.password.errors %} <!-- form.password.errors: error message for password -->
+                        {% if form.password.errors %} 
                         <div class="form-text text-danger">
                             {{ form.password.errors.0 }}
                         </div>
                         {% endif %}
-                    </div>
+                    </div> -->
 
                     <div>
                         <label for="uploadFile" class="form-label">Upload File</label>
@@ -113,15 +113,15 @@
 <!-- jQuery -->
 {% block script %}
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
 
         // tinymce editor
         tinymce.init({
             selector: '#content',
             language: 'ko_KR',
             // tinymce requirements 
-            setup: function(editor) {
-                editor.on('change', function() {
+            setup: function (editor) {
+                editor.on('change', function () {
                     editor.save(); // save the content to the textarea
                     validateContent(); // validate the content
                 });
@@ -133,21 +133,21 @@
             var content = tinymce.get('content').getContent();
             var textContent = $('<div>').html(content).text(); // convert html to text
 
-                if (textContent.length < 2) {
-                    $('#content').addClass('is-invalid');
-                    $('#content-error').remove();
-                    $('#content').closet('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter at least 2 characters</div>');
-                    return false;
-                } else if (textContent.length > 1000) {
-                    $('#content').addClass('is-invalid');
-                    $('#content-error').remove();
-                    $('#content').closet('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter less than 1000 characters</div>');
-                    return false;
-                } else {
-                    $('#content').removeClass('is-invalid');
-                    $('#content-error').remove();
-                    return true;
-                }
+            if (textContent.length < 2) {
+                $('#content').addClass('is-invalid');
+                $('#content-error').remove();
+                $('#content').closest('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter at least 2 characters</div>');
+                return false;
+            } else if (textContent.length > 1000) {
+                $('#content').addClass('is-invalid');
+                $('#content-error').remove();
+                $('#content').closest('.mb-3').append('<div id="content-error" class="invalid-feedback">Please enter less than 1000 characters</div>');
+                return false;
+            } else {
+                $('#content').removeClass('is-invalid');
+                $('#content-error').remove();
+                return true;
+            }
         }
 
 
@@ -158,52 +158,24 @@
                     required: true,
                     minlength: 2,
                     maxlength: 100
-                },
-                content: {
-                    required: true,
-                    minlength: 2,
-                    maxlength: 1000
-                },
-                username: {
-                    required: true,
-                    minlength: 2,
-                    maxlength: 20
-                },
-                password: {
-                    required: true,
-                    minlength: 4,
-                    maxlength: 20
                 }
+
             },
             messages: {
                 title: {
                     required: 'Please enter the title',
                     minlength: 'Please enter at least 2 characters',
                     maxlength: 'Please enter less than 100 characters'
-                },
-                content: {
-                    required: 'Please enter the content',
-                    minlength: 'Please enter at least 2 characters',
-                    maxlength: 'Please enter less than 1000 characters'
-                },
-                username: {
-                    required: 'Please enter the username',
-                    minlength: 'Please enter at least 2 characters',
-                    maxlength: 'Please enter less than 10 characters'
-                },
-                password: {
-                    required: 'Please enter the password',
-                    minlength: 'Please enter at least 4 characters',
-                    maxlength: 'Please enter less than 20 characters'
                 }
+
             },
             errorClass: 'is-invalid',
             validClass: 'is-valid',
-            errorPlacement: function(error, element) {
+            errorPlacement: function (error, element) {
                 error.addClass('invalid-feedback');
                 element.closest('.mb-3').append(error);
             },
-            submitHandler: function(form) {
+            submitHandler: function (form) {
                 // check the content before submitting the form
                 if (validateContent()) {
                     form.submit();

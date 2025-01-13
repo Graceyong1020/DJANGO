@@ -52,7 +52,7 @@ def login_account(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            username=form.cleaned_data['username'],
+            username=form.cleaned_data['username']
             password=form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
 
@@ -111,7 +111,7 @@ def update_profile(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.save()
-            update_session_auth_hash(request. user)
+            update_session_auth_hash(request, user)
             messages.success(request, 'Profile updated successfully')
             return redirect('auth:profile')
         else:

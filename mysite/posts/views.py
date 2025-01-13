@@ -14,6 +14,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password, check_password # 비밀번호 암호화 및 비교
 
+from django.contrib.auth.decorators import login_required
+
 from .models import Posts
 
 from django.contrib import messages
@@ -24,6 +26,7 @@ from .form2 import PostUpdateForm
 # register
 """ def create_post(request):
     return HttpResponse("Create post") """
+@login_required(login_url='auth:login')
 def create_post(request):
     form = PostCreateForm()
 
@@ -32,7 +35,9 @@ def create_post(request):
         
         if form.is_valid():
             post = form.save(commit=False)
-            post.password = make_password(form.cleaned_data['password'])
+            #post.password = make_password(form.cleaned_data['password'])
+            post.created_by = request.user
+            post.updated_by = request.user
             post.save()
 
             # file upload
@@ -64,6 +69,7 @@ def create_post(request):
 """ def get_post(request, post_id):
     return HttpResponse('Get post')
  """
+@login_required(login_url='auth:login')
 def get_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
     return render(request, 'posts/read.html', {'post': post})
@@ -72,18 +78,25 @@ def get_post(request, post_id):
 """ def update_post(request, post_id):
     return HttpResponse('Update post') """
 
+@login_required(login_url='auth:login')
 def update_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
-    post_password = post.password 
+
+    if post.created_by != request.user:
+        messages.error(request, 'You are not authorized to update this post')
+        return redirect('posts:read', post_id=post.id)
+    
+    # post_password = post.password    
     form = PostUpdateForm(instance=post)
 
     if request.method == 'POST':
         form = PostUpdateForm(request.POST, instance=post)
 
         if form.is_valid():
-            if check_password(form.cleaned_data['password'], post_password): # 비밀번호 확인
-                post = form.save(commit=False)
-                post.password = make_password(form.cleaned_data['password'])
+                
+                post.title = form.cleaned_data['title']
+                post.content = form.cleaned_data['content']
+                post.updated_by = request.user
                 post.save()
 
                 # delete file
@@ -125,10 +138,9 @@ def update_post(request, post_id):
 
                     messages.success(request, 'Post updated successfully')
                     return redirect('posts:read', post_id=post.id)
-                else:
-                    messages.error(request, 'Password is incorrect')
-            else:
-                messages.error(request, 'Post update failed')
+
+        else:
+            messages.error(request, 'Post update failed')
         
     return render(request, 'posts/update.html', {'form': form})
 
@@ -137,12 +149,17 @@ def update_post(request, post_id):
 """ def delete_post(request, post_id):
     return HttpResponse('Delete post') """
 
+@login_required(login_url='auth:login')
 def delete_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
-    password = request.POST.get('password')
+    #password = request.POST.get('password')
+
+    if post.created_by != request.user:
+        messages.error(request, 'You are not authorized to delete this post')
+        return redirect('posts:read', post_id=post.id)
 
     if request.method == 'POST':
-        if check_password(password, post.password):
+        #if check_password(password, post.password):
             # delete file
             if post.filename:
                 file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))
@@ -152,14 +169,14 @@ def delete_post(request, post_id):
             post.delete()
             messages.success(request, 'Post deleted successfully')
             return redirect('posts:list')
-        else:
+        #else:
             messages.error(request, 'Password is incorrect')
             return redirect('posts:read', post_id=post.id)
 
 # List
 """ def get_posts(request):
     return HttpResponse('Get List of posts') """
-
+@login_required(login_url='auth:login')
 def get_posts(request):
     page = request.GET.get('page', 1)
     posts = Posts.objects.all().order_by('-created_at') # 최신순으로 정렬
@@ -183,10 +200,14 @@ def get_posts(request):
             posts = posts.filter(
                 Q(content__contains=searchKeyword)
             )
-        elif searchType == 'username':
+        #elif searchType == 'username':
+        #    posts = posts.filter(
+        #        Q(username__contains=searchKeyword)
+        #    )
+        elif searchType == 'full_name':
             posts = posts.filter(
-                Q(username__contains=searchKeyword)
-            )
+                Q(created_by__first_name__contains=searchKeyword)
+        )
 
     #pagination
     paginator = Paginator(posts, 10)
@@ -208,6 +229,7 @@ def get_posts(request):
     })
 
 # file download
+@login_required(login_url='auth:login')
 def download_file(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
     file_path = os.path.join(settings.MEDIA_ROOT, 'posts', str(post.id), str(post.filename))

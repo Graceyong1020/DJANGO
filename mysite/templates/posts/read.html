@@ -14,7 +14,7 @@
                     Created: {{ post.created_at | date:"Y-m-d H:i" }} |
                     Updated: {{ post.updated_at | date:"Y-m-d H:i" }}
                 </div>
- 
+
 
                 {% if post.filename %}
                 <div class="mb-3 text-muted">
@@ -24,7 +24,7 @@
 
                 <div class="mb-3">
                     <!-- {{ post.content | linebreaksbr }} -->
-                      {{ post.content | safe }}
+                    {{ post.content | safe }}
                 </div>
             </div>
         </div>
@@ -37,6 +37,65 @@
             {% endif %}
         </div>
         <!-- Read -->
+    </div>
+</div>
+
+<!-- comment template -->
+<div class="row mt-3" id="commentCreateRow">
+    <div class="col-12">
+        <!-- comment create -->
+        <form id="commentCreateForm">
+            <div class="mb-3">
+                <textarea id="content" name="content" class="form-control" placeholder="comment" rows="5"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Comment</button>
+            <buttont type="button" class="btn btn-secondary" id="commentCreateCancel">Cancel</button>
+        </form>
+        <!-- comment create -->
+    </div>
+</div>
+
+<div class="row mt-3 d-none" id="commentUpdateRow">
+    <div class="col-12">
+        <!-- comment update -->
+         <form id ="commentUpdateForm">
+            <div class="mb-3">
+                <textarea id="updateContent" name="content" class="form-control"
+                    placeholder="comment" rows="5"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="button" class="btn btn-secondary" id="commentUpdateCancel">Cancel</button>
+        </form>
+        <!-- comment update -->
+    </div>
+</div>
+
+<div class="row mt-3" id="commentListRow">
+    <div class="col-12">
+        <!--  comment list -->
+        <div id="commentList">
+            {% for comment in comments %}
+            <div class="card mb-3" data-comment-id="{{ comment.id}}">
+                <div class="card-body">
+                    {{ comment.content | linebreaksbr }}
+                </div>
+                <div class="card-footer text-muted">
+                    username: {{ comment.created_by.first_name }} |
+                    created: {{ comment.created_at | date:"Y-m-d H:i" }} |
+                    updated: {{ comment.updated_at | date:"Y-m-d H:i" }}
+                    {% if comment.created_by == request.user %}
+                    <div class="float-end">
+                        <a href="#" class="btn btn-warning btn-sm btn-comment-update">Comment Update</a>
+                        <button type="button" class="btn btn-danger btn-sm ms-2 btn-comment-delete">Comment
+                            Delete</button>
+
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- comment list -->
     </div>
 </div>
 <!-- Delete Modal -->
@@ -76,4 +135,226 @@
     </div>
 </div>
 <!-- Delete Modal -->
+
+<!-- comment delete modal -->
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-danger" id="deleteCommentModalLabel">
+                    <strong>delete comment</strong>
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <p class="text-danger"> You cannot undo this action</p>
+                    <p>Are you sure you want to delete this comment?</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger btn-comment-delete-confirm">Delete Comment</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- comment delete modal -->
+
+{% endblock %}
+
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // comment create cancel
+        $('#commentCreateCancel').on('click', function () {
+            $('#content').val('');
+        });
+        // validate comment create form
+        $('#commentCreateForm').validate({
+            rules: {
+                content: {
+                    required: true,
+                    maxlength: 1000,
+                    minlength: 2
+                }
+            },
+            messages: {
+                content: {
+                    required: 'Please enter comment',
+                    maxlength: 'Please enter within 1000 characters',
+                    minlength: 'Please enter at least 2 characters'
+                }
+            },
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.mb-3').append(error);
+            },
+            submitHandler: function (form) {
+                $.ajax({
+                    url: '{%url "comments:create" %}',
+                    type: 'POST',
+                    data: {
+                        'post_id': '{{ post.id }}',
+                        'content': $('#content').val()
+                    },
+                    success: function (response) {
+                        if (response.result == 'success') {
+                            // add comment to comment list
+                            let comments = response.comments;
+                            let html = '';
+                            for (let comment of comments) {
+                                html += '<div class="card mb-3" data-comment-id="' + comment.id + '">';
+                                html += '<div class="card-body">' + comment.content.replace(/\n/g, '<br>') + '</div>';
+                                html += '<div class="card-footer text-muted">';
+                                html += 'username: ' + comment.created_by + ' | created: ' + comment.created_at;
+                                html += ' | updated: ' + comment.updated_at;
+                                html += '<div class="float-end">';
+                                html += '<a href="#" class="btn btn-warning btn-sm btn-comment-update">Comment Update</a>';
+                                html += '<button type="button" class="btn btn-danger btn-sm ms-2 btn-comment-delete">Comment Delete</button>';
+                                html += '</div>';
+                                html += '</div>';
+                                html += '</div>';
+                            }
+                            $('#commentList').html(html);
+                            $('#content').val('');
+
+                        } else {
+                            alert('Failed to create comment');
+                        }
+                    }
+                });
+            }
+        });
+
+        // comment update 
+        $(document).on('click', '.btn-comment-update', function() {
+            $('#commentCreateRow').addClass('d-none');
+            $('#commentListRow').addClass('d-none');
+            $('#commentUpdateRow').removeClass('d-none');
+            $('#updateContent').val(
+                $(this).closest('.card').find('.card-body').html().trim().replace(/<br>\s*\?>/gi, '\n')
+            );
+            comment_id = $(this).closest('.card').data('comment-id');
+        });
+
+        // comment update cancel
+        $('#commentUpdateCancel').on('click', function() {
+            $('#commentUpdateRow').addClass('d-none');
+            $('#commentCreateRow').removeClass('d-none');
+            $('#commentListRow').removeClass('d-none');
+            $('#updateContent').val('');
+        });
+
+        // validate comment update form
+        $('#commentUpdateForm').validate({
+            rules: {
+                content: {
+                    required: true,
+                    maxlength: 1000,
+                    minlength: 2
+                }
+            },
+            messages: {
+                content: {
+                    required: 'Please enter comment',
+                    maxlength: 'Please enter within 1000 characters',
+                    minlength: 'Please enter at least 2 characters'
+                }
+            },
+            errorClass: 'is-invalid',
+            validClass: 'is-valid',
+            errorPlacement: function(error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.mb-3').append(error);
+            },
+            submitHandler: function(form) {
+                $.ajax({
+                    url: '{% url "comments:update" comment_id=0 %}',
+                    type: 'POST',
+                    data: {
+                        'post_id': {{ post.id }},
+                        'comment_id': comment_id,
+                        'content': $('#updateContent').val(),
+                    },
+                    success: function(response) {
+                        if (response.result == 'success') {
+                            // add comment to comment list
+                            let comments = response.comments;
+                            let html = '';
+                            for (let comment of comments) {
+                                html += '<div class="card mb-3" data-comment-id="' + comment.id + '">';
+                                html += '<div class="card-body">' + comment.content.replace(/\n/g, '<br>') + '</div>';
+                                html += '<div class="card-footer text-muted">';
+                                html += 'username: ' + comment.created_by; 
+                                html += ' | created: ' + comment.created_at;
+                                html += ' | updated: ' + comment.updated_at;
+                                html += '<div class="float-end">';
+                                html += '<a href="#" class="btn btn-warning btn-sm btn-comment-update">Comment Update</a>';
+                                html += '<button type="button" class="btn btn-danger btn-sm ms-2 btn-comment-delete">Comment Delete</button>';
+                                html += '</div>';
+                                html += '</div>';
+                                html += '</div>';
+                            }
+                            $('#commentList').html(html);
+                            $('#commentUpdateRow').addClass('d-none');
+                            $('#commentCreateRow').removeClass('d-none');
+                            $('#commentListRow').removeClass('d-none');
+                            $('#updateContent').val('');
+                        } else {
+                            alert('Failed to update comment');
+                        }
+                    }
+                });
+            }
+        });
+
+        // comment delete
+        $(document).on('click', '.btn-comment-delete', function() {
+            comment_id = $(this).closest('.card').data('comment-id');
+            $('#deleteCommentModal').modal('show');
+        });
+
+        // comment delete confirm
+        $('#deleteCommentModal').on('click', '.btn-comment-delete-confirm', function() {
+            $.ajax({
+                url: '{% url "comments:delete" comment_id=0 %}',
+                type: 'POST',
+                data: {
+                    'post_id': {{ post.id }},
+                    'comment_id': comment_id,
+                },
+                success: function(response) {
+                    if (response.result == 'success') {
+                        // add comment to comment list
+                        let comments = response.comments;
+                        let html = '';
+                        for (let comment of comments) {
+                            html += '<div class="card mb-3" data-comment-id="' + comment.id + '">';
+                            html += '<div class="card-body">' + comment.content.replace(/\n/g, '<br>') + '</div>';
+                            html += '<div class="card-footer text-muted">';
+                            html += 'username: ' + comment.created_by; '| created: ' + comment.created_at;
+                            html += ' | updated: ' + comment.updated_at;
+                            html += '<div class="float-end">';
+                            html += '<a href="#" class="btn btn-warning btn-sm btn-comment-update">Comment Update</a>';
+                            html += '<button type="button" class="btn btn-danger btn-sm ms-2 btn-comment-delete">Comment Delete</button>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</div>';
+                        }
+                        $('#commentList').html(html);
+                        $('#deleteCommentModal').modal('hide');
+                    } else {
+                        alert('Failed to delete comment');
+                    }
+                }
+
+            })
+        })
+
+    });
+</script>
 {% endblock %}

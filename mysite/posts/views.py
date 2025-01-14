@@ -22,6 +22,8 @@ from django.contrib import messages
 from .form import PostCreateForm
 from .form2 import PostUpdateForm
 
+from comments.models import Comments
+
 
 # register
 """ def create_post(request):
@@ -72,7 +74,9 @@ def create_post(request):
 @login_required(login_url='auth:login')
 def get_post(request, post_id):
     post = get_object_or_404(Posts, id=post_id)
-    return render(request, 'posts/read.html', {'post': post})
+    #return render(request, 'posts/read.html', {'post': post})
+    commnets = Comments.objects.filter(post=post_id).order_by('-created_at')
+    return render(request, 'posts/read.html', {'post': post, 'comments': commnets})
 
 # Update
 """ def update_post(request, post_id):

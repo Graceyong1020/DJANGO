@@ -40,6 +40,7 @@ INSTALLED_APPS = [ # 추가한 app을 등록
     "posts",
     "tinymce",
     "accounts", # accounts app 추가
+    "comments", # comments app 추가
 ]
 
 MIDDLEWARE = [

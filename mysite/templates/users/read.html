@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-4 mx-auto">
+        <!-- user details -->
+        <div class="card mb-3">
+            <h5 class="card header text-primary">
+                <strong>User Info</strong>
+            </h5>
+            <div class="card-body">
+                <div class="mb-3">
+                    ID: {{ user.username }}
+                </div>
+                <hr>
+                <div class="mb-3">
+                    Name: {{ user.first_name }}
+                </div>
+                <hr>
+                <div class="mb-3">
+                    Email: {{ user.email }}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <a href="{% url 'users:list' %}" class="btn btn-primary">List</a>
+            {% if request.user.is_superuser %}
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                data-bs-target="#deleteModal">Delete</button>
+            {% endif %}
+        </div>
+        <!--  user details -->
+    </div>
+</div>
+
+<!-- delete modal -->
+ {% if request.user.is_superuser %}
+ <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="deleteForm" action="{% url 'users:delete' user_id=user.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h1 class="modal-title" id="deleteModalLabel"><strong>Delete User</strong></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p class="text-danger"> You can't undo this action.</p>
+                        <p> Are you sure you want to delete this user?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Delete User</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+<!-- delete modal -->
+{% endblock %}

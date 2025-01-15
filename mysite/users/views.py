@@ -4,7 +4,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User # 사용자 모델
 from django.db.models import Q 
 from django.core.paginator import Paginator # 페이징 처리
-from django.shortcuts import render # render: 템플릿을 사용하여 HTML 페이지를 출력
+from django.shortcuts import render, get_object_or_404, redirect # render: 템플릿을 사용하여 HTML 페이지를 출력
+from django.contrib import messages # 메시지 프레임워크
+
 
 # user list
 @login_required(login_url='auth:login')
@@ -45,10 +47,17 @@ def get_users(request):
 @login_required(login_url='auth:login')
 @user_passes_test(lambda u: u.is_superuser)
 def get_user(request, user_id):
-    return HttpResponse('Get user detail')
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'users/read.html', {'user': user})
 
 # delete user
 @login_required(login_url='auth:login')
 @user_passes_test(lambda u: u.is_superuser)
 def delete_user(request, user_id):
-    return HttpResponse('Delete user')
+    user = get_object_or_404(User, id=user_id)
+    if user.is_superuser:
+        messages.error(request, 'You cannot delete the superuser.')
+        return redirect('users:read', user_id=user.id)
+    
+    user.delete()
+    return redirect('users:list')

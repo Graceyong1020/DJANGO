@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- search, register button -->
+         <div class="d-flex justify-content-between">
+            <!-- search form -->
+            <form method="GET">
+                <div class="input-group">
+                    <select name="searchType" class="from-select w-auto">
+                        <option value="all" {% if searchType == 'all' %}selected{% endif %}>전체</option>
+                        <option value="username" {% if searchType == 'username' %}selected{% endif %}>아이디</option>
+                        <option value="email" {% if searchType == 'email' %}selected{% endif %}>이메일</option>
+                        <option value="first_name" {% if searchType == 'first_name' %}selected{% endif %}>이름</option>
+                    </select>
+                    <input type="text" name="searchKeyword" class="form-control w-auto"
+                        value="{{ searchKeyword|default_if_none:'' }}" placeholder="검색어 입력">
+                    <button type="submit" class="btn btn-primary">검색</button>
+                    {% if searchType != null %}
+                        <a href="{%url 'users:list' %}" class="btn btn-danger">Cancel</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        <!-- search, register button -->
+    </div>
+</div>
+<div class="row">
+    <div class = "col-12">
+        <!-- user list -->
+         <div class="table-responsive">
+            <table class="table table-bordered mt-3">
+                <thead>
+                <tr class="text-center">
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                    <th>Logined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td class="text-center">{{ user.index_number}}</td>
+                        <td><a href="{% url 'users:read' user_id=user.id %}">{{ user.username }}</a></td>
+                        <td class="text-center">{{ user.first_name }}</td>
+                        <td class="text-center">{{ user.email }}</td>
+                        <td class="text-center">{{ user.date_joined | date:"Y-m-d H:i"}}</td>
+                        <td class="text-center">{{ user.last_login | date:"Y-m-d H:i"}}</td>
+                    </tr>
+                     {% endfor %}
+            </tbody>
+        </table>
+    </div>
+     <!-- user list -->
+
+
+                <tr>
+                    <td colspan="6">
+                        <div class="d-flex justify-content-center">
+                            {{ users|pagination }}
+                        </div>
+                    </td>
+            </tbody>
+
+                </tr>
+                </thead>
+            </table>
+         </div>
+    </div>
+</div>

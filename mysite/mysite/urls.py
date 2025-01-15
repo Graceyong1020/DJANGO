@@ -24,4 +24,5 @@ urlpatterns = [
     path("auth/", include("accounts.urls")), # accounts path 설정
     path("tinymce/", include("tinymce.urls")),
     path("comments/", include("comments.urls")),
+    path("users/", include("users.urls")), # users path 설정
 ]
